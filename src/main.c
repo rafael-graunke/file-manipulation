@@ -18,12 +18,12 @@ void convert_to_bin(void)
 int main(void)
 {
     char name[256] = "Toy Story";
-
+    int iter;
     FILE *file = fopen("input/arqMovies.bin", "rb");
-    Movie *movie = binsearch_in_file(file, name);
+    Movie *movie = binsearch_in_file(file, name, &iter);
 
     // FILE *file = fopen("input/arqMovies.txt", "r");
-    // Movie *movie = binsearch_in_memory(file, name);
+    // Movie *movie = binsearch_in_memory(file, name, &iter);
 
     if (movie == NULL)
     {
@@ -31,7 +31,7 @@ int main(void)
         return EXIT_FAILURE;
     }
 
-    printf("Movie found!\n");
+    printf("Movie found after %d comparisons!\n", iter);
 
     return EXIT_SUCCESS;
 }

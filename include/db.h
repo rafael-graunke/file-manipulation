@@ -3,9 +3,9 @@
 
 #include "movie.h"
 
-Movie *binsearch_in_memory(FILE *input, char *name);
+Movie *binsearch_in_memory(FILE *input, char *name, int *iter);
 
 // This function takes in a bin file with all movies
-Movie *binsearch_in_file(FILE *input, char *name);
+Movie *binsearch_in_file(FILE *input, char *name, int *iter);
 
 #endif
