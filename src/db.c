@@ -2,73 +2,58 @@
 #include <math.h>
 #include "db.h"
 
-Movie *binsearch_in_memory(FILE *input, char *name, int *iter)
+Movie *binsearch_in_memory(Movie **movies, int start, int end, char *name, int *pos, bool *found)
 {
-    int cmp, middle, upper, lower = 0;
-    Movie **movies = movie_read_all(input, &upper);
-    upper--; // Treat it as index
-
-    while (upper != lower)
+    int middle;
+    *found = false;
+    Movie *cursor;
+    if (start <= end)
     {
-        *iter += 1;
-        middle = (int)ceilf((upper - lower) / 2. + lower);
+        middle = (end + start) / 2;
+        cursor = movies[middle];
 
-        if (middle == upper)
-            break;
-
-        cmp = strcmp(name, movies[middle]->name);
+        int cmp = strcmp(name, cursor->name);
         if (cmp == 0)
-            return movies[middle];
-
-        if (cmp < 0)
         {
-            printf("\"%s\" comes BEFORE \"%s\"\n", name, movies[middle]->name);
-            upper = middle;
+            *found = true;
+            *pos = middle;
+            return cursor;
         }
 
-        if (cmp > 0)
-        {
-            printf("\"%s\" comes AFTER \"%s\"\n", name, movies[middle]->name);
-            lower = middle;
-        }
+        else if (cmp < 0)
+            return binsearch_in_memory(movies, start, middle - 1, name, pos, found);
+        else
+            return binsearch_in_memory(movies, middle + 1, end, name, pos, found);
     }
 
     return NULL;
 }
 
-Movie *binsearch_in_file(FILE *input, char *name, int *iter)
+Movie *binsearch_in_file(FILE *movies, int start, int end, char *name, int *pos, bool *found)
 {
-    int cmp, middle, upper, lower = 0;
-    fseek(input, 0, SEEK_END);
-    upper = ftell(input) / sizeof(Movie) - 1;
-    Movie *movie = (Movie *)malloc(sizeof(Movie));
+    int middle;
+    *found = false;
+    Movie *cursor = (Movie *)malloc(sizeof(Movie));
 
-    while (upper != lower)
+    if (start <= end)
     {
-        *iter += 1;
-        middle = (int)ceilf((upper - lower) / 2. + lower);
+        middle = (end + start) / 2;
+        fseek(movies, sizeof(Movie) * middle, SEEK_SET);
+        fread(cursor, sizeof(Movie), 1, movies);
 
-        if (middle == upper)
-            break;
+        int cmp = strcmp(name, cursor->name);
 
-        fseek(input, middle * sizeof(Movie), SEEK_SET);
-        fread(movie, sizeof(Movie), 1, input);
-
-        cmp = strcmp(name, movie->name);
         if (cmp == 0)
-            return movie;
-
-        if (cmp < 0)
         {
-            printf("\"%s\" comes BEFORE \"%s\"\n", name, movie->name);
-            upper = middle;
+            *found = true;
+            *pos = middle;
+            return cursor;
         }
 
-        if (cmp > 0)
-        {
-            printf("\"%s\" comes AFTER \"%s\"\n", name, movie->name);
-            lower = middle;
-        }
+        else if (cmp < 0)
+            return binsearch_in_file(movies, start, middle - 1, name, pos, found);
+        else
+            return binsearch_in_file(movies, middle + 1, end, name, pos, found);
     }
 
     return NULL;
