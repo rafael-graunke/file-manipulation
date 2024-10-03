@@ -58,3 +58,43 @@ Movie *binsearch_in_file(FILE *movies, int start, int end, char *name, int *pos,
 
     return NULL;
 }
+
+int compare(const void *arg1, const void *arg2)
+{
+    return ((MovieIndex *)arg1)->id - ((MovieIndex *)arg2)->id;
+}
+
+MovieIndex *index_movies_by_id(char *index_name)
+{
+    FILE *source = fopen("input/arqMovies.bin", "rb");
+    if (source == NULL)
+        exit(EXIT_FAILURE);
+
+    fseek(source, 0, SEEK_END);
+    int count = ftell(source) / sizeof(Movie);
+    rewind(source);
+
+    Movie **movies = (Movie **)malloc(sizeof(Movie *) * count);
+
+    for (int i = 0; i < count; i++)
+    {
+        movies[i] = (Movie *)malloc(sizeof(Movie));
+        fread(movies[i], sizeof(Movie), 1, source);
+    }
+
+    char buffer[256];
+    snprintf(buffer, 256, "input/index/%s", index_name);
+    FILE *index = fopen(buffer, "wb");
+    MovieIndex *indexes = (MovieIndex *)malloc(sizeof(Movie) * count);
+    for (int i = 0; i < count; i++)
+    {
+        indexes[i].id = movies[i]->id;
+        indexes[i].addr = sizeof(Movie) * i;
+    }
+
+    qsort(indexes, count, sizeof(MovieIndex), compare);
+    for (int i = 0; i < count; i++)
+        fwrite(&(indexes[i]), sizeof(MovieIndex), 1, index);
+
+    return indexes;
+}

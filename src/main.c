@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
 #include "movie.h"
 #include "db.h"
@@ -21,11 +23,14 @@ int convert_to_bin(void)
 int run_binsearch_file(void)
 {
     int count, pos;
+    clock_t time;
     char name[256];
     bool found;
 
     printf("Inform the movie name:\n");
     gets(name);
+
+    time = clock(); // Start to count time
 
     FILE *file = fopen("input/arqMovies.bin", "rb");
     fseek(file, 0, SEEK_END);
@@ -34,13 +39,17 @@ int run_binsearch_file(void)
 
     Movie *movie = binsearch_in_file(file, 0, count - 1, name, &pos, &found);
 
+    double time_taken = ((double)time) / CLOCKS_PER_SEC * 1000;
+
     if (movie == NULL)
     {
         printf("Movie \"%s\" was not found!\n", name);
+        printf("Took %f milliseconds\n", time_taken);
         return EXIT_FAILURE;
     }
 
     printf("Movie \"%s\" found!\n", name);
+    printf("Took %f milliseconds\n", time_taken);
 
     return EXIT_SUCCESS;
 }
@@ -48,23 +57,29 @@ int run_binsearch_file(void)
 int run_binsearch_memory(void)
 {
     int count, pos;
+    clock_t time;
     char name[256];
     bool found;
 
     printf("Inform the movie name:\n");
     gets(name);
 
+    time = clock(); // Start to count time
+
     FILE *file = fopen("input/arqMovies.txt", "r");
     Movie **movies = movie_read_all(file, &count);
     Movie *movie = binsearch_in_memory(movies, 0, count - 1, name, &pos, &found);
 
+    double time_taken = ((double)time) / CLOCKS_PER_SEC * 1000;
     if (movie == NULL)
     {
         printf("Movie \"%s\" was not found!\n", name);
+        printf("Took %f milliseconds\n", time_taken);
         return EXIT_FAILURE;
     }
 
     printf("Movie \"%s\" found!\n", name);
+    printf("Took %f milliseconds\n", time_taken);
 
     return EXIT_SUCCESS;
 }
@@ -77,7 +92,10 @@ int main(void)
     printf("Choose and option:\n");
     printf(" 1 - Dump text file;\n");
     printf(" 2 - Bin. search in memory;\n");
-    printf(" 3 - Bin. search in file (no indexing).\n");
+    printf(" 3 - Bin. search in file (no indexing);\n");
+    printf(" 4 - Run indexing by ID;\n");
+    printf(" 5 - Bin. search in file (with indexing);\n");
+    printf(" 6 - Add new movie;\n");
 
     scanf("%d", &option);
     getchar();
@@ -96,11 +114,16 @@ int main(void)
         return run_binsearch_file();
         break;
 
+    case 4:
+        break;
+
+    case 5:
+        index_movies_by_id("id");
+        break;
+
     default:
         printf("Invalid option!\n");
     }
 
-    // int iter;
-    // FILE *file = fopen("input/arqMovies.bin", "rb");
-    // Movie *movie = binsearch_in_file(file, name, &iter);
+    return EXIT_FAILURE;
 }
